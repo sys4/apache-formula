@@ -49,9 +49,11 @@ ServerRoot "/etc/httpd"
         {%- set interfaces = site.get('interface', '*').split() %}
         {%- set port = site.get('port', 80) %}
         {%- for interface in interfaces %}
-            {%- set listen_directive = interface ~ ':' ~ port %}
-            {%- if listen_directive not in listen_directives %}
-                {%- do listen_directives.append(listen_directive) %}
+            {%- if not site.get('exclude_listen_directive', False) %}
+                {%- set listen_directive = interface ~ ':' ~ port %}
+                {%- if listen_directive not in listen_directives %}
+                    {%- do listen_directives.append(listen_directive) %}
+                {%- endif %}
             {%- endif %}
         {%- endfor %}
     {%- endfor %}
@@ -345,7 +347,7 @@ LogLevel warn
 # in HTML content to override this choice, comment out this
 # directive:
 #
-AddDefaultCharset UTF-8
+AddDefaultCharset {{ apache.default_charset }}
 
 <IfModule mime_magic_module>
     #
@@ -391,3 +393,7 @@ IncludeOptional {{ apache.confdir }}/*.conf
 IncludeOptional {{ apache.vhostdir }}/*.conf
 {% endif %}
 
+# Added for security enhancements
+TraceEnable off
+ServerSignature off
+ServerTokens Prod
